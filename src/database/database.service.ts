@@ -1,59 +1,76 @@
+import 'dotenv/config';
+
 import {
     Injectable,
     OnModuleDestroy,
     OnModuleInit,
+    ServiceUnavailableException,
 } from '@nestjs/common';
+
 import neo4j, {
     Driver,
-    Session,
     QueryResult,
 } from 'neo4j-driver';
 
 @Injectable()
-export class DatabaseService implements OnModuleInit, OnModuleDestroy {
+export class DatabaseService
+    implements OnModuleInit, OnModuleDestroy {
     private readonly driver: Driver;
 
     constructor() {
+        const uri = process.env.COGNODB_URI;
+        const username = process.env.COGNODB_USERNAME;
+        const password = process.env.COGNODB_PASSWORD;
+        console.log('🌱 Starting CognoDB service...\n', uri, username, password)
+
+        if (!uri || !username || !password) {
+            throw new Error(
+                'Missing CognoDB environment variables',
+            );
+        }
+
         this.driver = neo4j.driver(
-            process.env.COGNODB_URI!,
-            neo4j.auth.basic(
-                process.env.COGNODB_USERNAME!,
-                process.env.COGNODB_PASSWORD!,
-            ),
+            uri,
+            neo4j.auth.basic(username, password),
         );
     }
 
-    async onModuleInit(): Promise<void> {
-        await this.connect();
+    async onModuleInit() {
+        try {
+            await this.driver.verifyConnectivity();
+
+            console.log('✅ Connected to CognoDB');
+        } catch (error) {
+            console.error('❌ CognoDB connection failed:', error);
+
+            throw new ServiceUnavailableException(
+                'Database unavailable',
+            );
+        }
     }
 
-    async onModuleDestroy(): Promise<void> {
-        await this.close();
-    }
-
-    async connect(): Promise<void> {
-        await this.driver.verifyConnectivity();
-        console.log('Connected to CognoDB');
-    }
-
-    getSession(): Session {
-        return this.driver.session();
-    }
-
-    async executeQuery<T = unknown>(
-        query: string,
-        parameters: Record<string, unknown> = {},
+    async query(
+        cypher: string,
+        params: Record<string, unknown> = {},
     ): Promise<QueryResult> {
-        const session = this.getSession();
+        const session = this.driver.session();
 
         try {
-            return await session.run(query, parameters);
+            return await session.run(cypher, params);
+        } catch (error) {
+            console.error('❌ CognoDB query failed:', error);
+
+            throw new ServiceUnavailableException(
+                'Database unavailable',
+            );
         } finally {
             await session.close();
         }
     }
 
-    async close(): Promise<void> {
+    async onModuleDestroy() {
         await this.driver.close();
+
+        console.log('🔌 CognoDB connection closed');
     }
 }

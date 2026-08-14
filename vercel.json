@@ -8,72 +8,11 @@
     ],
     "routes": [
         {
-            "src": "/",
+            "src": "/(.*)",
             "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/technologies",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/technologies/[^/]+",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/technologies/[^/]+/related",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/technologies/[^/]+/ecosystem",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/technologies/[^/]+/projects",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/projects",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/projects/[^/]+",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/graph",
-            "methods": [
-                "GET"
-            ],
-            "dest": "src/main.ts"
-        },
-        {
-            "src": "/graph/path",
-            "methods": [
-                "GET"
+                "GET",
+                "POST",
+                "OPTIONS"
             ],
             "dest": "src/main.ts"
         }

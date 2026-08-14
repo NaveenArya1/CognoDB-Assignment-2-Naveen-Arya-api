@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const allowedOrigins = [
-    'https://cogno-db-assignment-2-naveen-arya-w.vercel.app/',
+    'https://cogno-db-assignment-2-naveen-arya-w.vercel.app',
   ];
   app.enableCors({
     origin: (origin, callback) => {

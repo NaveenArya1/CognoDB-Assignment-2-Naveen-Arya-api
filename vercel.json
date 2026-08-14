@@ -1,0 +1,81 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "src/main.ts",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/technologies",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/technologies/[^/]+",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/technologies/[^/]+/related",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/technologies/[^/]+/ecosystem",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/technologies/[^/]+/projects",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/projects",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/projects/[^/]+",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/graph",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        },
+        {
+            "src": "/graph/path",
+            "methods": [
+                "GET"
+            ],
+            "dest": "src/main.ts"
+        }
+    ]
+}

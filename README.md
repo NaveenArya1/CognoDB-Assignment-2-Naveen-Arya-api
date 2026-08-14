@@ -6,12 +6,12 @@ TechPath API is a NestJS backend that uses CognoDB, a Neo4j-compatible graph dat
 
 The API allows users to:
 
-* Browse technologies
-* Find a technology by ID
-* Discover related technologies
-* Find projects using a technology
-* Explore a technology ecosystem
-* Find multi-hop paths between technologies
+- Browse technologies
+- Find a technology by ID
+- Discover related technologies
+- Find projects using a technology
+- Explore a technology ecosystem
+- Find multi-hop paths between technologies
 
 The project demonstrates how a graph database can be used for relationship-based queries and graph traversal.
 
@@ -19,14 +19,15 @@ The project demonstrates how a graph database can be used for relationship-based
 
 ## Tech Stack
 
-* **Node.js**
-* **NestJS**
-* **TypeScript**
-* **CognoDB / Neo4j-compatible graph database**
-* **neo4j-driver**
-* **dotenv**
-* **tsx**
-* **REST API**
+- **Node.js**
+- **NestJS**
+- **TypeScript**
+- **CognoDB / Neo4j-compatible graph database**
+- **neo4j-driver**
+- **dotenv**
+- **tsx**
+- **REST API**
+- **Vercel** for API deployment
 
 ---
 
@@ -36,6 +37,9 @@ The application follows a simple NestJS modular architecture:
 
 ```text
 Client
+  │
+  ▼
+Vercel
   │
   ▼
 NestJS Controller
@@ -290,6 +294,24 @@ PostgreSQL
 
 ---
 
+## Health Check
+
+The root endpoint can be used as a simple deployment check:
+
+```http
+GET /
+```
+
+Expected response:
+
+```text
+Hello World!
+```
+
+If you customize the root controller, update this example accordingly.
+
+---
+
 ## Cypher Queries
 
 ### Get all technologies
@@ -373,7 +395,7 @@ await databaseService.query(
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root for local development:
 
 ```env
 COGNODB_URI=your_cognodb_uri
@@ -389,10 +411,36 @@ project/
 ├── package.json
 ├── src/
 ├── scripts/
+├── vercel.json
 └── README.md
 ```
 
-Do not commit `.env` or database credentials to Git.
+### Production environment variables
+
+Do **not** commit `.env` or database credentials to Git.
+
+For Vercel, configure the variables in:
+
+```text
+Vercel Dashboard
+→ Project
+→ Settings
+→ Environment Variables
+```
+
+Add:
+
+```text
+COGNODB_URI
+COGNODB_USER
+COGNODB_PASSWORD
+```
+
+Enable them for the environments you use, such as:
+
+- Production
+- Preview
+- Development
 
 ---
 
@@ -404,7 +452,7 @@ Clone the repository and install dependencies:
 npm install
 ```
 
-Make sure the required environment variables are configured in `.env`.
+Configure the required environment variables in `.env`.
 
 ---
 
@@ -419,10 +467,10 @@ scripts/
 
 The seed creates approximately:
 
-* 15 Technology nodes
-* 10 Project nodes
-* 30 `RELATED_TO` relationships
-* 25 `USES` relationships
+- 15 Technology nodes
+- 10 Project nodes
+- 30 `RELATED_TO` relationships
+- 25 `USES` relationships
 
 Run the seed:
 
@@ -453,6 +501,241 @@ Example:
 ```text
 http://localhost:3000/technologies
 ```
+
+---
+
+## Production Build
+
+Create a production build:
+
+```bash
+npm run build
+```
+
+NestJS generates the compiled application in:
+
+```text
+dist/
+```
+
+The production application can be started with:
+
+```bash
+npm run start:prod
+```
+
+---
+
+## Deploy to Vercel
+
+TechPath API can be deployed to Vercel as a NestJS backend.
+
+Vercel provides zero-configuration support for NestJS, so the project does not need a custom `builds`, `routes`, or `outputDirectory` configuration. The included `vercel.json` intentionally contains only the Vercel schema.
+
+### 1. Push the project to GitHub
+
+Make sure the repository contains:
+
+```text
+package.json
+src/
+vercel.json
+README.md
+```
+
+Do not commit:
+
+```text
+.env
+```
+
+### 2. Import the repository into Vercel
+
+In the Vercel dashboard:
+
+```text
+New Project
+→ Import Git Repository
+→ Select TechPath API repository
+```
+
+Keep the project root pointed at the directory containing `package.json`.
+
+### 3. Configure environment variables
+
+Add the CognoDB variables in:
+
+```text
+Vercel Dashboard
+→ Project
+→ Settings
+→ Environment Variables
+```
+
+Add:
+
+```text
+COGNODB_URI
+COGNODB_USER
+COGNODB_PASSWORD
+```
+
+Enable them for the environments where they are required.
+
+Never put database credentials directly inside `vercel.json` or source code.
+
+### 4. Configure the build
+
+Vercel should detect the NestJS application automatically.
+
+The project build command is:
+
+```bash
+npm run build
+```
+
+NestJS generates the compiled output in:
+
+```text
+dist/
+```
+
+Do not add a custom `outputDirectory` or rewrite all requests to `dist/main.js` when using Vercel's current NestJS support.
+
+### 5. Deploy
+
+Click **Deploy**.
+
+After deployment, Vercel provides a URL similar to:
+
+```text
+https://your-project.vercel.app
+```
+
+Test the API:
+
+```text
+https://your-project.vercel.app/
+https://your-project.vercel.app/technologies
+https://your-project.vercel.app/projects
+https://your-project.vercel.app/graph
+```
+
+Use the deployed URL as the API base URL for the TechPath frontend.
+
+---
+
+## Automatic Deployment
+
+When the GitHub repository is connected to Vercel, Vercel automatically creates deployments for Git pushes and pull requests according to the project's Git settings.
+
+Recommended production workflow:
+
+```text
+feature branch
+      │
+      ▼
+Pull Request
+      │
+      ▼
+Code Review
+      │
+      ▼
+Merge → main
+      │
+      ▼
+Vercel Production Deployment
+      │
+      ▼
+TechPath API
+```
+
+Configure `main` as the Vercel production branch if it is not already selected.
+
+Every new commit merged into `main` will then trigger a new production deployment.
+
+---
+
+## Vercel Configuration
+
+The project intentionally uses a minimal `vercel.json`:
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json"
+}
+```
+
+Vercel's current NestJS support handles framework detection and deployment automatically.
+
+Avoid older configurations such as:
+
+```json
+{
+  "builds": [
+    {
+      "src": "dist/main.js",
+      "use": "@vercel/node"
+    }
+  ]
+}
+```
+
+or catch-all rewrites such as:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}
+```
+
+unless you have a specific reason to use a custom serverless configuration.
+
+---
+
+## Frontend Integration
+
+The TechPath frontend should use the deployed API URL instead of the local development URL.
+
+Local development:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+Production:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-project.vercel.app
+```
+
+For a Next.js frontend deployed separately, configure the production variable in the frontend hosting platform.
+
+---
+
+## CORS
+
+If the frontend and API are hosted on different domains, configure CORS in the NestJS application.
+
+Example:
+
+```ts
+app.enableCors({
+  origin: [
+    "http://localhost:3000",
+    "https://your-frontend-domain.com",
+  ],
+});
+```
+
+Replace the production frontend URL with the actual deployed domain.
+
+Do not use a wildcard origin in production when credentials or authenticated requests are involved.
 
 ---
 
@@ -519,7 +802,7 @@ Response:
 
 ---
 
-## Why a graph database?
+## Why a Graph Database?
 
 TechPath uses a graph database because its primary operation is exploring relationships between technologies.
 
@@ -571,14 +854,15 @@ This makes graph databases particularly suitable for TechPath because the applic
 
 The project demonstrates:
 
-* Graph data modeling
-* Technology-to-technology relationships
-* Project-to-technology relationships
-* Parameterized Cypher queries
-* Variable-length graph traversal
-* Multi-hop path discovery
-* Technology ecosystem discovery
-* REST API development with NestJS
-* Database connection management
-* Graceful database error handling
-* Graph database use cases
+- Graph data modeling
+- Technology-to-technology relationships
+- Project-to-technology relationships
+- Parameterized Cypher queries
+- Variable-length graph traversal
+- Multi-hop path discovery
+- Technology ecosystem discovery
+- REST API development with NestJS
+- Database connection management
+- Graceful database error handling
+- Graph database use cases
+- Deployment of a NestJS API to Vercel

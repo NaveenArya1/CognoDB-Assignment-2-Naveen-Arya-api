@@ -13,22 +13,41 @@ export class ProjectService {
 
     async findAll() {
         const result = await this.databaseService.query(`
-      MATCH (p:Project)
-      RETURN p
-      ORDER BY p.name
-    `);
+    MATCH (p:Project)
+    OPTIONAL MATCH (p)-[:USES]->(t:Technology)
+
+    RETURN
+      p,
+      collect(t) AS technologies
+
+    ORDER BY p.name
+  `);
 
         return result.records.map((record) => {
-            return record.get('p').properties;
+            const project = record.get('p').properties;
+
+            const technologies = record
+                .get('technologies')
+                .filter(Boolean)
+                .map((technology: any) => technology.properties);
+
+            return {
+                ...project,
+                technologies,
+            };
         });
     }
 
     async findOne(id: string) {
         const result = await this.databaseService.query(
             `
-      MATCH (p:Project {id: $id})
-      RETURN p
-      `,
+    MATCH (p:Project {id: $id})
+    OPTIONAL MATCH (p)-[:USES]->(t:Technology)
+
+    RETURN
+      p,
+      collect(t) AS technologies
+    `,
             { id },
         );
 
@@ -36,6 +55,18 @@ export class ProjectService {
             throw new NotFoundException('Project not found');
         }
 
-        return result.records[0].get('p').properties;
+        const record = result.records[0];
+
+        const project = record.get('p').properties;
+
+        const technologies = record
+            .get('technologies')
+            .filter(Boolean)
+            .map((technology: any) => technology.properties);
+
+        return {
+            ...project,
+            technologies,
+        };
     }
 }

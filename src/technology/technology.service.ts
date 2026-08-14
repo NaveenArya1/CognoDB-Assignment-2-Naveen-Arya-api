@@ -59,21 +59,40 @@ export class TechnologyService {
   }
 
   async findProjects(id: string) {
-    await this.findOne(id);
-
     const result = await this.databaseService.query(
       `
-      MATCH (p:Project)-[:USES]->(t:Technology)
-      WHERE t.id = $id
-      RETURN p
-      ORDER BY p.name
-      `,
+    MATCH (t:Technology {id: $id})
+    OPTIONAL MATCH (t)<-[:USES]-(p:Project)
+    OPTIONAL MATCH (p)-[:USES]->(projectTechnology:Technology)
+
+    RETURN
+      p,
+      collect(DISTINCT projectTechnology) AS technologies
+
+    ORDER BY p.name
+    `,
       { id },
     );
 
-    return result.records.map((record) => {
-      return record.get('p').properties;
-    });
+    if (result.records.length === 0) {
+      throw new NotFoundException('Technology not found');
+    }
+
+    return result.records
+      .filter((record) => record.get('p'))
+      .map((record) => {
+        const project = record.get('p').properties;
+
+        const technologies = record
+          .get('technologies')
+          .filter(Boolean)
+          .map((technology: any) => technology.properties);
+
+        return {
+          ...project,
+          technologies,
+        };
+      });
   }
 
   async findEcosystem(id: string) {

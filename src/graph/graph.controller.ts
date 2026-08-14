@@ -12,6 +12,13 @@ export class GraphController {
         private readonly graphService: GraphService,
     ) { }
 
+    // GET /graph
+    @Get()
+    findAll() {
+        return this.graphService.findAll();
+    }
+
+    // GET /graph/path?from=react&to=aws
     @Get('path')
     findPath(
         @Query('from') from: string,
